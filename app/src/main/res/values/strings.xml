@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">SleepPlay</string>
+    <string name="channel_name">SleepPlay Notifications</string>
+    <string name="channel_description">Notifications for SleepPlay app</string>
+    <string name="accessibility_service_description">SleepPlay Accessibility Service for key event handling</string>
 </resources>
