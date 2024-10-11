@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -114,6 +115,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SleepPlayApp() {
         val isSwitchOn = remember { mutableStateOf(false) }
+        val isDisplayTimeOn = remember { mutableStateOf(false) }
         val context = LocalContext.current
         val scaffoldState = rememberBottomSheetScaffoldState()
         val coroutineScope = rememberCoroutineScope()
@@ -221,6 +223,29 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 8.dp)
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Switch(
+                            checked = isDisplayTimeOn.value,
+                            onCheckedChange = { isChecked ->
+                                isDisplayTimeOn.value = isChecked
+                                val intent = Intent(context, BlackScreenService::class.java).apply {
+                                    action = if (isChecked) "ENABLE_TIME_DISPLAY" else "DISABLE_TIME_DISPLAY"
+                                }
+                                context.startService(intent)
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Display Time",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
 
                 FloatingActionButton(
