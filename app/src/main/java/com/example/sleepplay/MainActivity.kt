@@ -18,9 +18,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,20 +44,24 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
 import androidx.compose.material3.Switch
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Divider
+import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
     private val CHANNEL_ID = "SleepPlayChannel"
     private val NOTIFICATION_ID = 1
-
-    private val stopAppReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "STOP_APP") {
-                finish()
-            }
-        }
-    }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -52,7 +69,15 @@ class MainActivity : ComponentActivity() {
         if (isGranted) {
             showNotification()
         } else {
+            // Handle permission denial
+        }
+    }
 
+    private val stopAppReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "STOP_APP") {
+                finish()
+            }
         }
     }
 
@@ -85,22 +110,157 @@ class MainActivity : ComponentActivity() {
         stopService(intent)
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun SleepPlayApp() {
         val isSwitchOn = remember { mutableStateOf(false) }
+        val context = LocalContext.current
+        val scaffoldState = rememberBottomSheetScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
 
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Switch(
-                checked = isSwitchOn.value,
-                onCheckedChange = { isChecked ->
-                    isSwitchOn.value = isChecked
-                    if (isChecked) {
-                        checkNotificationPermission()
-                    } else {
-                        cancelNotification()
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetContent = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "SleepPlay Info",
+                        fontSize = 30.sp,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Text(
+                        text = "Helps you save battery by turning the screen black while allowing video to play in the background.",
+                        fontSize = 15.sp,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Step 1",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Enable required permissions",
+                            fontSize = 15.sp,
+                            style = MaterialTheme.typography.bodyLarge
+
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Step 2",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Toggle the switch to start",
+                            fontSize = 15.sp,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = "Step 3",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Tap on the Sleep button in the notification to turn the screen black",
+                            fontSize = 15.sp,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
-            )
+            },
+            sheetPeekHeight = 0.dp
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Switch(
+                        checked = isSwitchOn.value,
+                        onCheckedChange = { isChecked ->
+                            isSwitchOn.value = isChecked
+                            if (isChecked) {
+                                checkNotificationPermission()
+                            } else {
+                                cancelNotification()
+                            }
+                        }
+                    )
+
+                    Text(
+                        text = "Start",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            scaffoldState.bottomSheetState.expand()
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Filled.Info, contentDescription = "Help")
+                }
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Give ⭐ on GitHub",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .clickable {
+                                val githubIntent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://github.com/mukundsolanki/SleepPlay")
+                                )
+                                context.startActivity(githubIntent)
+                            }
+                    )
+                }
+            }
         }
     }
 
@@ -161,7 +321,6 @@ class MainActivity : ComponentActivity() {
         return false
     }
 
-
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "SleepPlay Notifications"
@@ -208,7 +367,6 @@ class MainActivity : ComponentActivity() {
 
         notificationManager.notify(NOTIFICATION_ID, builder.build())
     }
-
 
     private fun cancelNotification() {
         val notificationManager: NotificationManager =
