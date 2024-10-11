@@ -30,6 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
+import androidx.compose.material3.Switch
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
 class MainActivity : ComponentActivity() {
     private val CHANNEL_ID = "SleepPlayChannel"
     private val NOTIFICATION_ID = 1
@@ -83,10 +87,20 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun SleepPlayApp() {
+        val isSwitchOn = remember { mutableStateOf(false) }
+
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Button(onClick = { checkNotificationPermission() }) {
-                Text("Start")
-            }
+            Switch(
+                checked = isSwitchOn.value,
+                onCheckedChange = { isChecked ->
+                    isSwitchOn.value = isChecked
+                    if (isChecked) {
+                        checkNotificationPermission()
+                    } else {
+                        cancelNotification()
+                    }
+                }
+            )
         }
     }
 
@@ -186,12 +200,20 @@ class MainActivity : ComponentActivity() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Sleep", sleepPendingIntent)
-            .setAutoCancel(true)
+            .setOngoing(true)
+            .setAutoCancel(false)
 
         val notificationManager: NotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         notificationManager.notify(NOTIFICATION_ID, builder.build())
+    }
+
+
+    private fun cancelNotification() {
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     companion object {
