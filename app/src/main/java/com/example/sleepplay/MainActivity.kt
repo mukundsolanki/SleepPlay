@@ -154,7 +154,7 @@ class MainActivity : ComponentActivity() {
                     )
 
                     Text(
-                        text = "Helps you save battery by turning the screen black while allowing video to play in the background.",
+                        text = "Helps you save battery by turning off screen while allowing video to play in the background.",
                         fontSize = 15.sp,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -210,7 +210,7 @@ class MainActivity : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Tap on the Sleep button in the notification to turn the screen black",
+                            text = "Tap on the Sleep button in the notification to turn off screen",
                             fontSize = 15.sp,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -424,7 +424,7 @@ class MainActivity : ComponentActivity() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "SleepPlay Notifications"
+            val name = "SleepPlay"
             val descriptionText = "Notifications for SleepPlay app"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
@@ -454,9 +454,9 @@ class MainActivity : ComponentActivity() {
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle("SleepPlay")
-            .setContentText("Click Sleep to show black screen overlay")
+            .setContentText("Click Sleep to turn off screen")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Sleep", sleepPendingIntent)
@@ -464,7 +464,7 @@ class MainActivity : ComponentActivity() {
             .setAutoCancel(false)
 
         val notificationManager: NotificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         notificationManager.notify(NOTIFICATION_ID, builder.build())
     }
