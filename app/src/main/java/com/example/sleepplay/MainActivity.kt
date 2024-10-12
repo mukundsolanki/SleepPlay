@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -56,9 +55,15 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 
 class MainActivity : ComponentActivity() {
     private val CHANNEL_ID = "SleepPlayChannel"
@@ -69,8 +74,6 @@ class MainActivity : ComponentActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             showNotification()
-        } else {
-            // Handle permission denial
         }
     }
 
@@ -82,6 +85,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    val robotoFontFamily = FontFamily(
+        Font(R.font.dosis_regular, FontWeight.Normal),
+        Font(R.font.dosis_bold, FontWeight.Bold)
+    )
+
+    val customTypography = Typography(
+        bodyLarge = TextStyle(
+            fontFamily = robotoFontFamily,
+//            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        ),
+    )
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +108,9 @@ class MainActivity : ComponentActivity() {
         registerReceiver(stopAppReceiver, IntentFilter("STOP_APP"), RECEIVER_NOT_EXPORTED)
 
         setContent {
-            MaterialTheme {
+            MaterialTheme(
+                typography = customTypography
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -129,7 +147,7 @@ class MainActivity : ComponentActivity() {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "SleepPlay Info",
+                        text = "How to use?",
                         fontSize = 30.sp,
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -159,7 +177,6 @@ class MainActivity : ComponentActivity() {
                             text = "Enable required permissions",
                             fontSize = 15.sp,
                             style = MaterialTheme.typography.bodyLarge
-
                         )
                     }
 
@@ -204,47 +221,76 @@ class MainActivity : ComponentActivity() {
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Switch(
-                        checked = isSwitchOn.value,
-                        onCheckedChange = { isChecked ->
-                            isSwitchOn.value = isChecked
-                            if (isChecked) {
-                                checkNotificationPermission()
-                            } else {
-                                cancelNotification()
-                            }
-                        }
-                    )
-
                     Text(
-                        text = "Start",
+                        text = "SleepPlay",
+                        fontSize = 40.sp,
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(top = 8.dp)
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 32.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
                     ) {
-                        Switch(
-                            checked = isDisplayTimeOn.value,
-                            onCheckedChange = { isChecked ->
-                                isDisplayTimeOn.value = isChecked
-                                val intent = Intent(context, BlackScreenService::class.java).apply {
-                                    action = if (isChecked) "ENABLE_TIME_DISPLAY" else "DISABLE_TIME_DISPLAY"
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Start",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Switch(
+                                checked = isSwitchOn.value,
+                                onCheckedChange = { isChecked ->
+                                    isSwitchOn.value = isChecked
+                                    if (isChecked) {
+                                        checkNotificationPermission()
+                                    } else {
+                                        cancelNotification()
+                                    }
                                 }
-                                context.startService(intent)
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Display Time",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                            )
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Display Time",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Switch(
+                                checked = isDisplayTimeOn.value,
+                                onCheckedChange = { isChecked ->
+                                    isDisplayTimeOn.value = isChecked
+                                    val intent = Intent(context, BlackScreenService::class.java).apply {
+                                        action = if (isChecked) "ENABLE_TIME_DISPLAY" else "DISABLE_TIME_DISPLAY"
+                                    }
+                                    context.startService(intent)
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -269,13 +315,11 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Give ⭐ on GitHub",
                         style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 18.sp,
                         modifier = Modifier
-                            .padding(top = 8.dp)
                             .clickable {
                                 val githubIntent = Intent(
                                     Intent.ACTION_VIEW,
@@ -285,6 +329,38 @@ class MainActivity : ComponentActivity() {
                             }
                     )
                 }
+            }
+        }
+    }
+
+    @Composable
+    fun SettingsTile(
+        icon: ImageVector,
+        title: String,
+        onClick: () -> Unit
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+                .clickable(onClick = onClick)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }
